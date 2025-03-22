@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "core.h"
 #include "instr.h"
 
 
@@ -8,6 +9,7 @@ void instr_0_family(unsigned short instruction) {
 
 void instr_jump_immed(unsigned short instruction)  {
     printf("1: %x\n", instruction);
+    pc_reg = instruction & 0xFFF;
 } // 1
 
 void instr_call(unsigned short instruction)  {
