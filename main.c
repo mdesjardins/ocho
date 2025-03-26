@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
   unsigned short* instruction;
   while (pc_reg < MEMORY_SIZE) {
     instruction = mem + pc_reg;
+    trace();
     process_instruction(*instruction);
     pc_reg++;
   }
