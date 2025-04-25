@@ -26,16 +26,14 @@ void trace() {
         unsigned short* instruction;
         instruction = mem + pc_reg;
         unsigned char msb = (0xF000 & *instruction) >> 12;
-        printf("  %04x  %s\n", *instruction, instr_text[msb]);
+        char instr_text[16];
+        (*disassem_instr_ptr[msb])(*instruction, instr_text);
+
+        printf("  %04x  %s\n", *instruction, instr_text);
 
         for (; i<NUM_REGISTERS; i++) {
             printf("v%02x:%04x ", i, v_reg[i]);
         }
         printf("i: %x\n", i_reg);
     }
-}
-
-void disassemble(char* opcode, char* text) {
-    // Generates a string representation of the opcode passed to 
-    // it for use of trace output.
 }

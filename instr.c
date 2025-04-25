@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "core.h"
 #include "instr.h"
 
@@ -6,113 +7,224 @@
 void instr_0_family(unsigned short instruction) {
     //printf("0: %x\n", instruction);
 }  // 0xxx is a special case.
-void disassem_instr_0_family(unsigned short instruction, unsigned char* text_out) {
-    //printf("0: %x\n", instruction);
-}  // 0xxx is a special case.
+void disassem_instr_0_family(unsigned short instruction, char* text_out) {
+    if (instruction == 0x00e0) {
+        text_out = "CLS";
+    } else if (instruction == 0x00ee) {
+        text_out = "RET";
+    }
+    return;
+}  
 
 void instr_jump_immed(unsigned short instruction)  {
     //printf("1: %x\n", instruction);
 } // 1
-void disassem_instr_jump_immed(unsigned short instruction, unsigned char* text_out)  {
-    //printf("1: %x\n", instruction);
+void disassem_instr_jump_immed(unsigned short instruction, char* text_out)  {
+   unsigned short addr = instruction & 0xFFF;
+   sprintf(text_out, "JP %04x", addr); 
+   return;
 } // 1
 
 void instr_call(unsigned short instruction)  {
     //printf("2: %x\n", instruction);
 } // 2
-void disassem_instr_call(unsigned short instruction, unsigned char* text_out)  {
-    //printf("2: %x\n", instruction);
+void disassem_instr_call(unsigned short instruction, char* text_out)  {
+   unsigned short addr = instruction & 0xFFF;
+   sprintf(text_out, "CALL %04x", addr); 
+   return;
 } // 2
 
 void instr_skip_if_eq_immed(unsigned short instruction)  {
-    //printf("3: %x\n", instruction);
+
 } // 3
-void disassem_instr_skip_if_eq_immed(unsigned short instruction, unsigned char* text_out)  {
-    //printf("3: %x\n", instruction);
+void disassem_instr_skip_if_eq_immed(unsigned short instruction, char* text_out)  {
+    unsigned char reg = (instruction & 0x0F00) >> 8;
+    unsigned short immed = instruction & 0xFF;
+    sprintf(text_out, "SE V%X,%x", reg, immed);
+    return;
 } // 3
 
 void instr_skip_if_ne_immed(unsigned short instruction)  {
     //printf("4: %x\n", instruction);
 } // 4
-void disassem_instr_skip_if_ne_immed(unsigned short instruction, unsigned char* text_out)  {
-    //printf("4: %x\n", instruction);
+void disassem_instr_skip_if_ne_immed(unsigned short instruction, char* text_out)  {
+    unsigned char reg = (instruction & 0x0F00) >> 8;
+    unsigned short immed = instruction & 0xFF;
+    sprintf(text_out, "SNE V%X,%x", reg, immed);
+    return;
 } // 4
 
 void instr_skip_if_eq_reg(unsigned short instruction)  {
     //printf("5: %x\n", instruction);
 } // 5
-void disassem_instr_skip_if_eq_reg(unsigned short instruction, unsigned char* text_out)  {
+void disassem_instr_skip_if_eq_reg(unsigned short instruction, char* text_out)  {
     //printf("5: %x\n", instruction);
+    unsigned char reg0 = (instruction & 0x0F00) >> 8;
+    unsigned char reg1 = (instruction & 0x00F0) >> 4;
+    sprintf(text_out, "SE V%X,V%X", reg0, reg1);
+    return;
 } // 5
 
 void instr_load_immed(unsigned short instruction)  {
     //printf("6: %x\n", instruction);
 } // 6
-void disassem_instr_load_immed(unsigned short instruction, unsigned char* text_out)  {
-    //printf("6: %x\n", instruction);
+void disassem_instr_load_immed(unsigned short instruction, char* text_out)  {
+    unsigned char reg = (instruction & 0x0F00) >> 8;
+    unsigned short immed = instruction & 0xFF;
+    sprintf(text_out, "LD V%X,%x", reg, immed);
+    return;
 } // 6
 
 void instr_add_immed(unsigned short instruction) {
     //printf("7: %x\n", instruction);
 }  // 7
-void disassem_instr_add_immed(unsigned short instruction, unsigned char* text_out) {
-    //printf("7: %x\n", instruction);
+void disassem_instr_add_immed(unsigned short instruction, char* text_out) {
+    unsigned char reg = (instruction & 0x0F00) >> 8;
+    unsigned short immed = instruction & 0xFF;
+    sprintf(text_out, "ADD V%X,%x", reg, immed);
+    return;
 }  // 7
 
 void instr_8_family(unsigned short instruction)  {
     //printf("8: %x\n", instruction);
-} // 8xxx is a special case.
-void disassem_instr_8_family(unsigned short instruction, unsigned char* text_out)  {
-    //printf("8: %x\n", instruction);
-} // 8xxx is a special case.
+} // 8
+void disassem_instr_8_family(unsigned short instruction, char* text_out)  {
+    unsigned char subinstr = instruction & 0xF;
+    unsigned char reg0 = (instruction & 0x0F00) >> 8;
+    unsigned char reg1 = (instruction & 0x00F0) >> 4;
+    char cmd[5];
+    switch(subinstr) {
+        case 0x0:
+            strncpy(cmd, "LD", sizeof(cmd));
+            break;
+        case 0x1:
+            strncpy(cmd, "OR", sizeof(cmd));
+            break;
+        case 0x2:
+            strncpy(cmd, "AND", sizeof(cmd));
+            break;
+        case 0x3:
+            strncpy(cmd, "XOR", sizeof(cmd));
+            break;
+        case 0x4:
+            strncpy(cmd, "ADD", sizeof(cmd));
+            break;
+        case 0x5:
+            strncpy(cmd, "SUB", sizeof(cmd));
+            break;
+        case 0x6:
+            strncpy(cmd, "SHR", sizeof(cmd));
+            break;
+        case 0x7:
+            strncpy(cmd, "SUBN", sizeof(cmd));
+            break;
+        case 0xE:
+            strncpy(cmd, "SHL", sizeof(cmd));
+            break;
+    }
+    sprintf(text_out, "%s V%X,V%X", cmd, reg0, reg1);
+    return;
+} // 8
 
 void instr_skip_if_ne_reg(unsigned short instruction)  {
     //printf("9: %x\n", instruction);
 } // 9
-void disassem_instr_skip_if_ne_reg(unsigned short instruction, unsigned char* text_out)  {
-    //printf("9: %x\n", instruction);
+void disassem_instr_skip_if_ne_reg(unsigned short instruction, char* text_out)  {
+    unsigned char reg0 = (instruction & 0x0F00) >> 8;
+    unsigned char reg1 = (instruction & 0x00F0) >> 4;
+    sprintf(text_out, "SNE V%X,V%X", reg0, reg1);
+    return;
 } // 9
 
 void instr_load_i_reg(unsigned short instruction)  {
     //printf("A: %x\n", instruction);
 } // A
-void disassem_instr_load_i_reg(unsigned short instruction, unsigned char* text_out)  {
-    //printf("A: %x\n", instruction);
+void disassem_instr_load_i_reg(unsigned short instruction, char* text_out)  {
+    unsigned short immed = instruction & 0x0FFF;
+    sprintf(text_out, "LD I,%x", immed);
+    return;
 } // A
 
 void instr_jump_offset(unsigned short instruction)  {
     //printf("B: %x\n", instruction);
 } // B
-void disassem_instr_jump_offset(unsigned short instruction, unsigned char* text_out)  {
-    //printf("B: %x\n", instruction);
+void disassem_instr_jump_offset(unsigned short instruction, char* text_out)  {
+    unsigned short immed = instruction & 0x0FFF;
+    sprintf(text_out, "JP V0,%x", immed);
+    return;
 } // B
 
 void instr_rand(unsigned short instruction)  {
     //printf("C: %x\n", instruction);
 } // C
-void disassem_instr_rand(unsigned short instruction, unsigned char* text_out)  {
-    //printf("C: %x\n", instruction);
+void disassem_instr_rand(unsigned short instruction, char* text_out)  {
+    unsigned char reg = (instruction & 0x0F00) >> 8;
+    unsigned short immed = instruction & 0xFF;
+    sprintf(text_out, "RND V%X,%x", reg, immed);
+    return;
 } // C
 
 void instr_display(unsigned short instruction)  {
     //printf("D: %x\n", instruction);
 } // D
-void disassem_instr_display(unsigned short instruction, unsigned char* text_out)  {
-    //printf("D: %x\n", instruction);
+void disassem_instr_display(unsigned short instruction, char* text_out)  {
+    unsigned char reg0 = (instruction & 0x0F00) >> 8;
+    unsigned char reg1 = (instruction & 0x00F0) >> 4;
+    unsigned char nib = instruction & 0x000F;
+    sprintf(text_out, "DRW V%X,V%X,%x", reg0, reg1, nib);
+    return;
 } // D
 
 void instr_e_family(unsigned short instruction)  {
     //printf("E: %x\n", instruction);
 } // E special
-void disassem_instr_e_family(unsigned short instruction, unsigned char* text_out)  {
-    //printf("E: %x\n", instruction);
-} // E special
+void disassem_instr_e_family(unsigned short instruction, char* text_out)  {
+    unsigned char subinstr = instruction & 0x00FF;
+    unsigned char reg = instruction & 0x0F00 >> 8;
+    if (subinstr == 0x9e) {
+        sprintf(text_out, "SKP V%X", reg);
+    } else if (subinstr == 0xa1) {
+        sprintf(text_out, "SKNP V%X", reg);
+    }
+    return;
+} // E
 
 void instr_f_family(unsigned short instruction)  {
     //printf("F: %x\n", instruction);
 } // F special
-void disassem_instr_f_family(unsigned short instruction, unsigned char* text_out)  {
-    //printf("F: %x\n", instruction);
+void disassem_instr_f_family(unsigned short instruction, char* text_out)  {
+    unsigned char subinstr = instruction & 0x00FF;
+    unsigned char reg = instruction & 0x0F00 >> 8;
+    switch(subinstr) {
+        case 0x07:
+            sprintf(text_out, "SKP V%X", reg);
+            break;
+        case 0x0a:
+            sprintf(text_out, "LD V%X,K", reg);
+            break;
+        case 0x15:
+            sprintf(text_out, "LD DT,V%X", reg);
+            break;
+        case 0x18:
+            sprintf(text_out, "LD ST,V%X", reg);
+            break;
+        case 0x1e:
+            sprintf(text_out, "ADD I,V%X", reg);
+            break;
+        case 0x29:
+            sprintf(text_out, "LD F,V%X", reg);
+            break;
+        case 0x33:
+            sprintf(text_out, "LD B,V%X", reg);
+            break;
+        case 0x55:
+            sprintf(text_out, "LD [I],V%X", reg);
+            break;
+        case 0x65:
+            sprintf(text_out, "LD V%X,[I]", reg);
+            break;
+    }
+    return;
 } // F special
 
 void (*instr_ptr[16])(unsigned short) = {
@@ -134,7 +246,7 @@ void (*instr_ptr[16])(unsigned short) = {
   instr_f_family, // F special
 };
 
-void (*disassem_instr_ptr[16])(unsigned short, unsigned char*) = {
+void (*disassem_instr_ptr[16])(unsigned short, char*) = {
   disassem_instr_0_family,  // 0xxx is a special case.
   disassem_instr_jump_immed, // 1
   disassem_instr_call, // 2
