@@ -3,6 +3,14 @@
 #include "core.h"
 #include "instr.h"
 
+void _stack_push(unsigned short addr) {
+    //stack[stack_ptr++] = addr;
+}
+
+void _stack_pop(void) {
+    //return stack[--stack_ptr];
+}
+
 
 void instr_0_family(unsigned short instruction) {
     //printf("0: %x\n", instruction);
@@ -16,8 +24,14 @@ void disassem_instr_0_family(unsigned short instruction, char* text_out) {
     return;
 }  
 
+// 1nnn - JP addr
+// Jump to location nnn.
+//
+// The interpreter sets the program counter to nnn.
 void instr_jump_immed(unsigned short instruction)  {
-    //printf("1: %x\n", instruction);
+   unsigned short addr = instruction & 0xFFF;
+   pc_reg = addr;
+   return;
 } // 1
 void disassem_instr_jump_immed(unsigned short instruction, char* text_out)  {
    unsigned short addr = instruction & 0xFFF;
@@ -25,8 +39,16 @@ void disassem_instr_jump_immed(unsigned short instruction, char* text_out)  {
    return;
 } // 1
 
+
+// 2nnn - CALL addr
+// Call subroutine at nnn.
+//
+// The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
 void instr_call(unsigned short instruction)  {
-    //printf("2: %x\n", instruction);
+    unsigned short addr = instruction & 0xFFF;
+    stack[sp_reg++] = pc_reg;
+    pc_reg = addr;
+    return;
 } // 2
 void disassem_instr_call(unsigned short instruction, char* text_out)  {
    unsigned short addr = instruction & 0xFFF;
@@ -34,6 +56,12 @@ void disassem_instr_call(unsigned short instruction, char* text_out)  {
    return;
 } // 2
 
+
+
+// 3xkk - SE Vx, byte
+// Skip next instruction if Vx = kk.
+//
+// The interpreter compares register Vx to kk, and if they are equal, increments the program counter by 2.
 void instr_skip_if_eq_immed(unsigned short instruction)  {
 
 } // 3
@@ -44,6 +72,10 @@ void disassem_instr_skip_if_eq_immed(unsigned short instruction, char* text_out)
     return;
 } // 3
 
+// 4xkk - SNE Vx, byte
+// Skip next instruction if Vx != kk.
+//
+// The interpreter compares register Vx to kk, and if they are not equal, increments the program counter by 2.
 void instr_skip_if_ne_immed(unsigned short instruction)  {
     //printf("4: %x\n", instruction);
 } // 4
@@ -54,6 +86,7 @@ void disassem_instr_skip_if_ne_immed(unsigned short instruction, char* text_out)
     return;
 } // 4
 
+// 5xy0 - SE Vx, Vy
 void instr_skip_if_eq_reg(unsigned short instruction)  {
     //printf("5: %x\n", instruction);
 } // 5
@@ -65,6 +98,10 @@ void disassem_instr_skip_if_eq_reg(unsigned short instruction, char* text_out)  
     return;
 } // 5
 
+// 6xkk - LD Vx, byte
+// Set Vx = kk.
+//
+// The interpreter puts the value kk into register Vx.
 void instr_load_immed(unsigned short instruction)  {
     //printf("6: %x\n", instruction);
 } // 6
@@ -75,6 +112,10 @@ void disassem_instr_load_immed(unsigned short instruction, char* text_out)  {
     return;
 } // 6
 
+// 7xkk - ADD Vx, byte
+// Set Vx = Vx + kk.
+//
+// Adds the value kk to the value of register Vx, then stores the result in Vx.
 void instr_add_immed(unsigned short instruction) {
     //printf("7: %x\n", instruction);
 }  // 7
@@ -85,6 +126,10 @@ void disassem_instr_add_immed(unsigned short instruction, char* text_out) {
     return;
 }  // 7
 
+// 8xy0 - LD Vx, Vy
+// Set Vx = Vy.
+//
+// The values of Vx and Vy are swapped.
 void instr_8_family(unsigned short instruction)  {
     //printf("8: %x\n", instruction);
 } // 8
@@ -126,6 +171,10 @@ void disassem_instr_8_family(unsigned short instruction, char* text_out)  {
     return;
 } // 8
 
+// 9xy0 - SNE Vx, Vy
+// Skip next instruction if Vx != Vy.
+//
+// The values of Vx and Vy are compared, and if they are not equal, the program counter is increased by 2.
 void instr_skip_if_ne_reg(unsigned short instruction)  {
     //printf("9: %x\n", instruction);
 } // 9
@@ -145,6 +194,10 @@ void disassem_instr_load_i_reg(unsigned short instruction, char* text_out)  {
     return;
 } // A
 
+// Bnnn - JP V0, addr
+// Jump to location nnn + V0.
+//
+// The offset of the jump is stored in register V0. 
 void instr_jump_offset(unsigned short instruction)  {
     //printf("B: %x\n", instruction);
 } // B
@@ -154,6 +207,10 @@ void disassem_instr_jump_offset(unsigned short instruction, char* text_out)  {
     return;
 } // B
 
+// Cxkk - RND Vx, byte
+// Set Vx = random byte AND kk.
+//
+// The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk. The result is stored in Vx.
 void instr_rand(unsigned short instruction)  {
     //printf("C: %x\n", instruction);
 } // C
@@ -164,6 +221,11 @@ void disassem_instr_rand(unsigned short instruction, char* text_out)  {
     return;
 } // C
 
+// Dxyn - DRW Vx, Vy, nibble
+// Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+//
+// The interpreter reads n bytes from memory, starting at the address stored in I. These bytes are then displayed as sprites on screen.
+//
 void instr_display(unsigned short instruction)  {
     //printf("D: %x\n", instruction);
 } // D

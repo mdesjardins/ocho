@@ -9,10 +9,16 @@
 // memory.
 unsigned char* mem; // [MEMORY_SIZE];
 
+// the specification is unclear whether stack just lives in memory or 
+// is a separate data structure. for now, I'll treat it as a separate data 
+// structure cuz that's easy and I'm lazy (but this is probably wrong).
+unsigned char stack[STACK_SIZE];
+
 // registers and timers.
 unsigned short pc_reg;
 unsigned short i_reg;
 unsigned short v_reg[NUM_REGISTERS];
+unsigned short sp_reg;
 unsigned char delay_timer;
 unsigned char sound_timer;
 
@@ -27,6 +33,12 @@ void timer_callback(int signum) {
         sound_timer--;
     }
 }
+
+
+int swap_endian(unsigned short value) {
+  return ((value & 0x00FF) << 8) | ((value & 0xFF00) >> 8);
+}
+
 
 // main initialization of the vm.
 void init_core() {
@@ -53,4 +65,6 @@ void init_core() {
     timer.it_interval.tv_usec = 0;
     timer.it_interval.tv_usec = DELAY_TIMER_PERIOD_USEC;
     setitimer(ITIMER_REAL, &timer, NULL);
+
+    sp_reg = 0;
 }

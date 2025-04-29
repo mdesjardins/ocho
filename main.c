@@ -29,12 +29,10 @@ int main(int argc, char** argv) {
   while (pc_reg < MEMORY_SIZE) {
     instruction = mem + pc_reg;
     trace();
-    process_instruction(*instruction);
+    process_instruction(swap_endian(*instruction));
     pc_reg++;
   }
 
   // printf("Memory:\n");
   // dump_memory_to_console();
 }
-
-
