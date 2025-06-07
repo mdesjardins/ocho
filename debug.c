@@ -13,7 +13,6 @@ void dump_memory_to_console() {
 }
 
 void trace() {
-
     unsigned short* instruction;
     instruction = mem + pc_reg;
     if (*instruction != 0) {
@@ -29,11 +28,11 @@ void trace() {
         char instr_text[16];
         (*disassem_instr_ptr[msb])(*instruction, instr_text);
 
-        printf("  %04x  %s\n", *instruction, instr_text);
+        printf("  %04x  %s\n\r", *instruction, instr_text);
 
         for (; i<NUM_REGISTERS; i++) {
             printf("v%02x:%04x ", i, v_reg[i]);
         }
-        printf("i: %x\n", i_reg);
+        printf("i: %x\n\r", i_reg);
     }
 }

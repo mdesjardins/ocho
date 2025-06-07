@@ -1,9 +1,9 @@
 COMPILE=gcc
 RM=rm -f
 CFLAGS=-g
-LDFLAGS=-g
+LDFLAGS=-g -lncurses -lpanel -lmenu
 LDLIBS=
-SRCS=main.c core.c debug.c instr.c
+SRCS=main.c core.c debug.c instr.c term.c
 OBJS=$(subst .c,.o,$(SRCS))
 TARGET=ocho
 
