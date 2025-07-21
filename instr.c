@@ -2,6 +2,7 @@
 #include <string.h>
 #include "core.h"
 #include "instr.h"
+#include "term.h"
 
 void _stack_push(unsigned short addr) {
     //stack[stack_ptr++] = addr;
@@ -11,15 +12,18 @@ void _stack_pop(void) {
     //return stack[--stack_ptr];
 }
 
-
 void instr_0_family(unsigned short instruction) {
-    //printf("0: %x\n", instruction);
-}  // 0xxx is a special case.
-void disassem_instr_0_family(unsigned short instruction, char* text_out) {
     if (instruction == 0x00e0) {
-        text_out = "CLS";
+        clear();
     } else if (instruction == 0x00ee) {
-        text_out = "RET";
+        //return_from_subroutine();
+    }
+}  // 0xxx is a special case.
+void disassem_instr_0_family(unsigned short instruction, char* text_out) {    
+    if (instruction == 0x00e0) {
+        strcpy(text_out, "CLS");
+    } else if (instruction == 0x00ee) {
+        strcpy(text_out, "RET");
     }
     return;
 }  
@@ -186,7 +190,7 @@ void disassem_instr_skip_if_ne_reg(unsigned short instruction, char* text_out)  
 } // 9
 
 void instr_load_i_reg(unsigned short instruction)  {
-    //printf("A: %x\n", instruction);
+    i_reg = instruction & 0x0FFF;
 } // A
 void disassem_instr_load_i_reg(unsigned short instruction, char* text_out)  {
     unsigned short immed = instruction & 0x0FFF;
@@ -239,6 +243,21 @@ void disassem_instr_display(unsigned short instruction, char* text_out)  {
 
 void instr_e_family(unsigned short instruction)  {
     //printf("E: %x\n", instruction);
+    unsigned char subinstr = instruction & 0x00FF;
+    unsigned char reg = instruction & 0x0F00 >> 8;
+
+    if (subinstr == 0x9e) {
+        // SKP Vx
+        if (key_pressed(v_reg[reg])) {
+            pc_reg += 2;
+        }
+    } else if (instruction == 0xa1) {
+        // SKNP Vx  
+        if (!key_pressed(v_reg[reg])) {
+            pc_reg += 2;
+        }
+    }
+    return;
 } // E special
 void disassem_instr_e_family(unsigned short instruction, char* text_out)  {
     unsigned char subinstr = instruction & 0x00FF;
@@ -247,6 +266,8 @@ void disassem_instr_e_family(unsigned short instruction, char* text_out)  {
         sprintf(text_out, "SKP V%X", reg);
     } else if (subinstr == 0xa1) {
         sprintf(text_out, "SKNP V%X", reg);
+    } else {
+        sprintf(text_out, "Invalid E instruction: %x", instruction);
     }
     return;
 } // E

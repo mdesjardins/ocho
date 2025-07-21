@@ -15,6 +15,15 @@ void process_instruction(unsigned short instruction) {
   (*instr_ptr[high_nybble])(instruction);
 }
 
+void fix_endianness(unsigned char* mem, int size) {
+  for (int i = 0; i < size; i += 2) {
+    // Swap mem[i] and mem[i+1]
+    unsigned char tmp = mem[i];
+    mem[i] = mem[i+1];
+    mem[i+1] = tmp;
+  }
+}
+
 int main(int argc, char** argv) {
   init_term();
   init_core();
@@ -40,6 +49,9 @@ int main(int argc, char** argv) {
   // load the ROM.  
   FILE* fp = fopen(argv[optind], "rb");
   int i = fread((void *)(mem + PROGRAM_START_OFFSET), sizeof(char), MEMORY_SIZE-PROGRAM_START_OFFSET, fp);
+  fclose(fp);
+
+  fix_endianness(mem, MEMORY_SIZE);
 
   cleanup_term();
 
@@ -50,8 +62,9 @@ int main(int argc, char** argv) {
   while (pc_reg < MEMORY_SIZE) {
     instruction = mem + pc_reg;
     trace();
-    process_instruction(swap_endian(*instruction));
-    pc_reg++;
+
+    process_instruction(*instruction);
+    pc_reg += sizeof(unsigned short);  // each instruction is 2 bytes
   }
 
   if (dump_memory) {

@@ -17,6 +17,6 @@ extern unsigned short sp_reg;
 
 extern void init_core();
 
-extern int swap_endian(unsigned short value);
+extern unsigned short swap_endian(unsigned short value, unsigned short* out);
 
 #endif /* __CORE_H__ */

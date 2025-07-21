@@ -24,7 +24,13 @@ void trace() {
 
         unsigned short* instruction;
         instruction = mem + pc_reg;
+
+        printf("\n>>>>>>>>> instruction: %x\n", *instruction);   
+        printf(">>>>>>>>>> mem[pc_reg]: %x\n", mem[pc_reg]);
+        printf(">>>>>>>>>> mem[pc_reg+1]: %x\n", mem[pc_reg+1]);
+
         unsigned char msb = (0xF000 & *instruction) >> 12;
+        printf(">>>>>>>>>> msb: %x\n", msb);
         char instr_text[16];
         (*disassem_instr_ptr[msb])(*instruction, instr_text);
 

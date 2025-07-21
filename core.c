@@ -35,8 +35,9 @@ void timer_callback(int signum) {
 }
 
 
-int swap_endian(unsigned short value) {
-  return ((value & 0x00FF) << 8) | ((value & 0xFF00) >> 8);
+unsigned short swap_endian(unsigned short value, unsigned short* out) {
+    *out = ((value & 0x00FF) << 8) | ((value & 0xFF00) >> 8);
+    return *out;
 }
 
 
