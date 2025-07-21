@@ -194,7 +194,7 @@ void instr_load_i_reg(unsigned short instruction)  {
 } // A
 void disassem_instr_load_i_reg(unsigned short instruction, char* text_out)  {
     unsigned short immed = instruction & 0x0FFF;
-    sprintf(text_out, "LD I,%x", immed);
+    sprintf(text_out, "LD I,0x%x", immed);
     return;
 } // A
 
@@ -207,7 +207,7 @@ void instr_jump_offset(unsigned short instruction)  {
 } // B
 void disassem_instr_jump_offset(unsigned short instruction, char* text_out)  {
     unsigned short immed = instruction & 0x0FFF;
-    sprintf(text_out, "JP V0,%x", immed);
+    sprintf(text_out, "JP V0,0x%x", immed);
     return;
 } // B
 
@@ -221,23 +221,46 @@ void instr_rand(unsigned short instruction)  {
 void disassem_instr_rand(unsigned short instruction, char* text_out)  {
     unsigned char reg = (instruction & 0x0F00) >> 8;
     unsigned short immed = instruction & 0xFF;
-    sprintf(text_out, "RND V%X,%x", reg, immed);
+    sprintf(text_out, "RND V%X,0x%x", reg, immed);
     return;
 } // C
 
 // Dxyn - DRW Vx, Vy, nibble
 // Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
 //
-// The interpreter reads n bytes from memory, starting at the address stored in I. These bytes are then displayed as sprites on screen.
+// Draw an N pixels tall sprite from the memory location that the I index 
+// register is holding to the screen, at the horizontal X coordinate in VX 
+// and the Y coordinate in VY. All the pixels that are “on” in the sprite 
+// will flip the pixels on the screen that it is drawn to (from left to right,
+// from most to least significant bit). If any pixels on the screen were 
+//turned “off” by this, the VF flag register is set to 1. Otherwise, it’s set
+// to 0.
 //
 void instr_display(unsigned short instruction)  {
     //printf("D: %x\n", instruction);
+    unsigned char x_coord = v_reg[(instruction & 0x0F00) >> 8];
+    unsigned char y_coord = v_reg[(instruction & 0x00F0) >> 4];
+    unsigned char rows = instruction & 0x000F;
+
+    // read n bytes from memory starting at I.
+    unsigned char* sprite = mem + i_reg;
+    for (int i = 0; i < rows; i++) {
+        unsigned char row = sprite[i];
+        for (int j = 0; j < 8; j++) {
+            unsigned char pixel = (row >> (7 - j)) & 0x01;
+            if (pixel == 1) {
+                set_pixel(x_coord + j, y_coord + i, 1);
+            }
+        }
+    }
+    return;
 } // D
+
 void disassem_instr_display(unsigned short instruction, char* text_out)  {
     unsigned char reg0 = (instruction & 0x0F00) >> 8;
     unsigned char reg1 = (instruction & 0x00F0) >> 4;
     unsigned char nib = instruction & 0x000F;
-    sprintf(text_out, "DRW V%X,V%X,%x", reg0, reg1, nib);
+    sprintf(text_out, "DRW V%X,V%X,0x%x", reg0, reg1, nib);
     return;
 } // D
 

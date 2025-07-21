@@ -24,6 +24,9 @@ void cleanup_term() {
   endwin();
 }  
 
+void set_pixel(unsigned char x, unsigned char y, unsigned char value) {
+  mvaddch(y, x, value ? 'X' : ' ');
+}
 
 int key_pressed(unsigned char key) {
   if (_kbhit()) {

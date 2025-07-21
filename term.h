@@ -9,5 +9,6 @@
 void init_term();
 void cleanup_term();
 int key_pressed(unsigned char key);
+void set_pixel(unsigned char x, unsigned char y, unsigned char value);
 
 #endif

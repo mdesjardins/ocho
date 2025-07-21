@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
   fix_endianness(mem, MEMORY_SIZE);
 
   cleanup_term();
-
+  
   // start the fun. this assumes the host OS has the same endian-ness as 
   // the CHIP8 (most significant byte first).
   pc_reg = PROGRAM_START_OFFSET;
@@ -71,4 +71,6 @@ int main(int argc, char** argv) {
     printf("Memory:\n");
     dump_memory_to_console();
   }
+
+  
 }
