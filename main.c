@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h> 
+#include <signal.h>
 #include <curses.h>
 #include <panel.h>
 #include <menu.h>
@@ -9,6 +10,17 @@
 #include "debug.h"
 #include "instr.h"
 #include "term.h"
+
+FILE* user_log_file = NULL;
+
+void signal_handler(int sig) {
+  log("\nReceived signal %d, cleaning up...\n", sig);
+  if (user_log_file != NULL) {
+    fclose(user_log_file);
+  }
+  cleanup_term();
+  exit(1);
+}
 
 void process_instruction(unsigned short instruction) {
   char high_nybble = (instruction & 0xf000) >> 12;
@@ -24,25 +36,44 @@ void fix_endianness(unsigned char* mem, int size) {
   }
 }
 
+
 int main(int argc, char** argv) {
+  // Set up signal handlers
+  signal(SIGINT, signal_handler);   // Ctrl+C
+  signal(SIGTERM, signal_handler);  // Termination request
+  signal(SIGSEGV, signal_handler);  // Segmentation fault
+  
   init_term();
   init_core();
 
   int dump_memory = 0;
-
-
+  
   int opt;
   while ((opt = getopt(argc, argv, "d")) != -1) {
     switch (opt) {
       case 'd':
-        printf("debug: memory dump\n");
+        log("debug: memory dump\n");
         dump_memory = 1;
+        break;
+      case 'h':
+        log("Usage: %s [-d] rom_file\n", argv[0]);
+        log("  -d: dump memory to console\n");
+        log("  -h: show this help message\n");
+        return 0;
+        break;
+      case 'l':
+        user_log_file = fopen(optarg, "w");
+        if (user_log_file == NULL) {
+          log("Failed to open log file: %s\n", optarg);
+          return 1;
+        }
+        log_file = user_log_file;
         break;
     }
   }
 
   if (optind == argc) {
-    printf("No ROM file provided\n");
+    log("No ROM file provided\n");
     return 1;
   }
 
@@ -62,15 +93,16 @@ int main(int argc, char** argv) {
   while (pc_reg < MEMORY_SIZE) {
     instruction = mem + pc_reg;
     trace();
-
-    process_instruction(*instruction);
     pc_reg += sizeof(unsigned short);  // each instruction is 2 bytes
+    process_instruction(*instruction);
   }
 
   if (dump_memory) {
-    printf("Memory:\n");
+    log("Memory:\n");
     dump_memory_to_console();
   }
 
-  
+  if (user_log_file != NULL) {
+    fclose(user_log_file);
+  }
 }

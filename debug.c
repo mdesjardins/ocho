@@ -1,14 +1,18 @@
 
 #include <stdio.h>
+#include <stdarg.h>
 #include "core.h"
 #include "instr.h"
+#include "debug.h"
+
+FILE* log_file = NULL;
 
 void dump_memory_to_console() {
     for (int i=0; i<MEMORY_SIZE; i++) {
         if ((i % 32) == 0) {
-            printf("\n%03x-%03x: ", i, i+31);
+            log("\n%03x-%03x: ", i, i+31);
         }
-        printf("%02x ", *(mem+i)); 
+        log("%02x ", *(mem+i)); 
     }
 }
 
@@ -18,9 +22,9 @@ void trace() {
     if (*instruction != 0) {
         int i;
         for (i=0; i<NUM_REGISTERS/2; i++) {
-            printf("v%02x:%04x ", i, v_reg[i]);
+            log("v%02x:%04x ", i, v_reg[i]);
         }
-        printf("pc:%x", pc_reg);
+        log("pc:%x", pc_reg);
 
         unsigned short* instruction;
         instruction = mem + pc_reg;
@@ -29,11 +33,25 @@ void trace() {
         char instr_text[16];
         (*disassem_instr_ptr[msb])(*instruction, instr_text);
 
-        printf("  %04x  %s\n\r", *instruction, instr_text);
+        log("  %04x  %s\n\r", *instruction, instr_text);
 
         for (; i<NUM_REGISTERS; i++) {
-            printf("v%02x:%04x ", i, v_reg[i]);
+            log("v%02x:%04x ", i, v_reg[i]);
         }
-        printf("i: %x\n\r", i_reg);
+        log("i: %x\n\r", i_reg);
     }
+}
+
+/*
+ * Log a message to the log file.
+ * If the log file is not set, use stderr.
+ */
+void log(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    if (log_file == NULL) {
+        log_file = stderr;
+    }
+    vfprintf(log_file, format, args);
+    va_end(args);
 }

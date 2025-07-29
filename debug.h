@@ -3,5 +3,7 @@
 
 extern void dump_memory_to_console();
 extern void trace();
+extern void log(const char* format, ...);
+extern FILE* log_file;
 
 #endif
