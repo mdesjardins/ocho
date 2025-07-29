@@ -16,6 +16,7 @@ FILE* user_log_file = NULL;
 void signal_handler(int sig) {
   log("\nReceived signal %d, cleaning up...\n", sig);
   if (user_log_file != NULL) {
+    fflush(user_log_file);
     fclose(user_log_file);
   }
   cleanup_term();
@@ -49,15 +50,16 @@ int main(int argc, char** argv) {
   int dump_memory = 0;
   
   int opt;
-  while ((opt = getopt(argc, argv, "d")) != -1) {
+  while ((opt = getopt(argc, argv, "dl:h")) != -1) {
     switch (opt) {
       case 'd':
         log("debug: memory dump\n");
         dump_memory = 1;
         break;
       case 'h':
-        log("Usage: %s [-d] rom_file\n", argv[0]);
+        log("Usage: %s [-d] [-l log_file] rom_file\n", argv[0]);
         log("  -d: dump memory to console\n");
+        log("  -l: log to file\n");
         log("  -h: show this help message\n");
         return 0;
         break;
@@ -95,6 +97,7 @@ int main(int argc, char** argv) {
     trace();
     pc_reg += sizeof(unsigned short);  // each instruction is 2 bytes
     process_instruction(*instruction);
+    sleep(100);
   }
 
   if (dump_memory) {

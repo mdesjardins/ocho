@@ -1,4 +1,6 @@
+#include <signal.h>
 #include "term.h"
+
 
 int _kbhit(void) {
   int ch = getch();
@@ -33,6 +35,9 @@ int key_pressed(unsigned char key) {
     int ch = getch();
     if (ch == ERR) {
       return 0;
+    }
+    if (ch == 3) {
+      raise(SIGINT);
     }
     return ch == key;
   }
